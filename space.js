@@ -21,7 +21,7 @@
 
     self.autowatch = 1; // reload the JS file for development
     self.inlets = 1; // number of [space] inlets
-    self.outlets = 1; // number of [space] outlets
+    self.outlets = 2; // number of [space] outlets
     self.position = {}; // the current position in 3D space
     self.points = []; // an array of Gravity Point objects
     self.values = []; // the current synthesis space as interpolated from all points
@@ -31,6 +31,10 @@
     */
     function rand (min, max) {
         return Math.random() * (max - min) + min;
+    }
+
+    function scale (x, a1, a2, b1, b2) {
+        return b1 + (x - a1) * (b2 - b1) / (a2 - a1);
     }
 
     /*
@@ -51,7 +55,8 @@
         this.y = rand(-1, 1);
         this.z = rand(-1, 1);
 
-        this.val = parseInt(rand(0, 1024));
+        // this.val = parseInt(rand(0, 1024));
+        this.val = rand(0, 1);
 
         this.distance = function(){
             var x = (this.x - self.position.x),
@@ -61,7 +66,8 @@
         }
 
         this.value = function(){
-            return parseInt(this.val * (this.distance() - 2 + 1) * -1);
+            // return parseInt(this.val * (this.distance() - 2 + 1) * -1);
+            return this.val * scale(this.distance(), 0, 1, 1, 0);
         }
 
     }
@@ -84,6 +90,7 @@
 
     self.reset = function(){
         init();
+        post('Space reset\n');
     };
 
     /*
@@ -96,13 +103,12 @@
         self.position.y = y;
         self.position.z = z;
         
-        self.values = [];
-
         self.points.forEach(function(point, i){
             self.values[i] = point.value();
         });
 
-        outlet(0, self.values);
+        outlet(0, [self.position.x, self.position.y, self.position.z]);
+        outlet(1, self.values);
 
     };
     
